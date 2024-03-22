@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">WeatherApp</string>
+    <string name="refresh">Refresh</string>
+    <string name="settings">Settings</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="finish">Finish</string>
+    <string name="next">Next</string>
+    <string name="location">location</string>
+    <string name="weather_condition">weather_condition</string>
+<!--    <string name="temperature_placeholder">temperature_placeholder</string>-->
+    <string name="day">day</string>
+    <string name="date">date</string>
+    <string name="temperature">%1$.1f °C</string>
+    <string name="temperature_range">%1$.1f°C - %2$.1f°C</string>
+    <string name="weather_forecast">weather_forecast</string>
+    <string name="weather_forecast_format">Location: %1$s\nDay: %2$s\nDate: %3$s\nTemperature: %4$.1f°C - %5$.1f°C\nWeather: %6$s</string>
+    <string name="weather_data">weather_data</string>
+    <string name="refresh_data">refresh_data</string>
+    <string name="skip">skip</string>
+    <string name="onboarding_description">onboarding_description</string>
+    <string name="onboarding_title">onboarding_title</string>
+    <string name="weather_icon_description">weather_icon_description</string>
+    <!-- Add other string resources here -->
+</resources>
