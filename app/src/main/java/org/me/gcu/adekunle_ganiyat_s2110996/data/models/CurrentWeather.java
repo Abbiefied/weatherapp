@@ -7,7 +7,7 @@ public class CurrentWeather {
     private String title;
     private float temperature;
     private String windDirection;
-    private float windSpeed;
+    private String windSpeed;
     private String humidity;
     private String pressure;
     private String visibility;
@@ -16,7 +16,7 @@ public class CurrentWeather {
         // Default constructor
     }
 
-    public CurrentWeather(String title, float temperature, String windDirection, float windSpeed, String humidity, String pressure, String visibility) {
+    public CurrentWeather(String title, float temperature, String windDirection, String windSpeed, String humidity, String pressure, String visibility) {
         this.title = title;
         this.temperature = temperature;
         this.windDirection = windDirection;
@@ -27,9 +27,9 @@ public class CurrentWeather {
     }
 
     public CurrentWeather(float temperature, String title, String humidity) {
-        this.temperature =temperature;
+        this.temperature = temperature;
         this.title = title;
-        this.humidity =humidity;
+        this.humidity = humidity;
     }
 
     public String getTitle() {
@@ -56,11 +56,11 @@ public class CurrentWeather {
         this.windDirection = windDirection;
     }
 
-    public float getWindSpeed() {
+    public String getWindSpeed() {
         return windSpeed;
     }
 
-    public void setWindSpeed(float windSpeed) {
+    public void setWindSpeed(String windSpeed) {
         this.windSpeed = windSpeed;
     }
 
@@ -110,13 +110,22 @@ public class CurrentWeather {
     public static CurrentWeather fromJson(String jsonString) {
         try {
             JSONObject jsonObject = new JSONObject(jsonString);
-            String title = jsonObject.getString("title");
-            float temperature = (float) jsonObject.getDouble("temperature");
-            String windDirection = jsonObject.getString("windDirection");
-            float windSpeed = (float) jsonObject.getDouble("windSpeed");
-            String humidity = jsonObject.getString("humidity");
-            String pressure = jsonObject.getString("pressure");
-            String visibility = jsonObject.getString("visibility");
+
+            // Add null checks for each field before accessing them
+            String title = jsonObject.optString("title", null);
+            float temperature = (float) jsonObject.optDouble("temperature", 0.0);
+            String windDirection = jsonObject.optString("windDirection", null);
+            String windSpeed = jsonObject.optString("windSpeed", null);
+            String humidity = jsonObject.optString("humidity", null);
+            String pressure = jsonObject.optString("pressure", null);
+            String visibility = jsonObject.optString("visibility", null);
+
+            // Check if any required field is null
+//            if (title == null || windDirection == null || windSpeed == null || humidity == null || pressure == null || visibility == null) {
+//                return null; // Return null if any required field is missing
+//            }
+
+            // Create and return CurrentWeather object
             return new CurrentWeather(title, temperature, windDirection, windSpeed, humidity, pressure, visibility);
         } catch (JSONException e) {
             e.printStackTrace();

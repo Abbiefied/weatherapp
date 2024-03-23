@@ -22,9 +22,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.me.gcu.adekunle_ganiyat_s2110996.R;
+import org.me.gcu.adekunle_ganiyat_s2110996.util.AppExecutors;
 
 public class WeatherForecastFragment extends Fragment {
 
+    private boolean resumedState = false;
     private String location;
     private WeatherViewModel weatherViewModel;
     private RecyclerView recyclerView;
@@ -58,13 +60,31 @@ public class WeatherForecastFragment extends Fragment {
 
         // Initialize ViewModel using requireActivity()
         weatherViewModel = new ViewModelProvider(requireActivity()).get(WeatherViewModel.class);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        resumedState = true;
 
         // Observe weather forecast data only if location is not null
         if (location != null) {
-            weatherViewModel.getWeatherForecast(location).observe(getViewLifecycleOwner(), forecastList -> {
-                updateForecastList(forecastList);
-            });
+                weatherViewModel.getWeatherForecast(location).observe(getViewLifecycleOwner(), forecastList -> {
+                    // Update UI on the main thread
+                    requireActivity().runOnUiThread(() -> {
+                        updateForecastList(forecastList);
+                    });
+                });
         }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        resumedState = false;
+
+        // Remove observers when the fragment is paused
+        weatherViewModel.getCurrentWeather(location).removeObservers(getViewLifecycleOwner());
     }
 
     private void updateForecastList(List<Forecast> forecastList) {

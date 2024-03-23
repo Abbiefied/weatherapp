@@ -40,7 +40,9 @@ public class WeatherForecastAdapter extends RecyclerView.Adapter<WeatherForecast
     public void onBindViewHolder(@NonNull ForecastViewHolder holder, int position) {
         if (mForecastList != null && position < mForecastList.size()) {
             Forecast forecast = mForecastList.get(position);
-            holder.bind(forecast);
+            if (forecast != null) {
+                holder.bind(forecast);
+            }
         }
     }
 

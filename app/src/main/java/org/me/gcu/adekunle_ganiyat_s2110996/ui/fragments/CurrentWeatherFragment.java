@@ -25,10 +25,12 @@ import androidx.lifecycle.Observer;
 
 import org.me.gcu.adekunle_ganiyat_s2110996.data.models.CurrentWeather;
 import org.me.gcu.adekunle_ganiyat_s2110996.ui.viewmodels.WeatherViewModel;
+import org.me.gcu.adekunle_ganiyat_s2110996.util.AppExecutors;
 
 
 public class CurrentWeatherFragment extends Fragment {
 
+    private boolean resumedState = false;
     private String location;
     private WeatherViewModel weatherViewModel;
     private TextView titleTextView;
@@ -63,20 +65,50 @@ public class CurrentWeatherFragment extends Fragment {
         // Initialize ViewModel using requireActivity()
         weatherViewModel = new ViewModelProvider(requireActivity()).get(WeatherViewModel.class);
 
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        resumedState = true;
+
         // Observe current weather data only if location is not null
         if (location != null) {
-            weatherViewModel.getCurrentWeather(location).observe(getViewLifecycleOwner(), currentWeather -> {
-                updateCurrentWeather(currentWeather);
-            });
+                weatherViewModel.getCurrentWeather(location).observe(getViewLifecycleOwner(), currentWeather -> {
+                    // Update UI on the main thread
+                    requireActivity().runOnUiThread(() -> {
+                        updateCurrentWeather(currentWeather);
+                    });
+                });
         }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        resumedState = false;
+
+        // Remove observers when the fragment is paused
+        weatherViewModel.getCurrentWeather(location).removeObservers(getViewLifecycleOwner());
     }
 
     private void updateCurrentWeather(CurrentWeather currentWeather) {
         // Update views with current weather data
         if (currentWeather != null) {
-            titleTextView.setText(currentWeather.getTitle());
-            humidityTextView.setText(currentWeather.getHumidity());
-            temperatureTextView.setText(getString(R.string.temperature, currentWeather.getTemperature()));
+            String title = currentWeather.getTitle();
+            if (title != null) {
+                titleTextView.setText(title);
+            }
+
+            String humidity = currentWeather.getHumidity();
+            if (humidity != null) {
+                humidityTextView.setText(humidity);
+            }
+
+            float temperature = currentWeather.getTemperature();
+            if (!Float.isNaN(temperature)) {
+                temperatureTextView.setText(getString(R.string.temperature, temperature));
+            }
         }
     }
 }

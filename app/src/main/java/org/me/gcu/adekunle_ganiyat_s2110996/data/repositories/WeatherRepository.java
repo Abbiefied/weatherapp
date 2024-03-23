@@ -24,7 +24,7 @@ public class WeatherRepository {
     }
 
     public void getWeatherForecast(String location, WeatherCallback<List<Forecast>> callback, Context context) {
-        networkDataSource.fetchWeatherForecast(location, new NetworkDataSource.WeatherCallback<List<Forecast>>() {
+        networkDataSource.fetchWeatherForecast(context, location, new NetworkDataSource.WeatherCallback<List<Forecast>>() {
             @Override
             public void onSuccess(List<Forecast> data) {
                 callback.onSuccess(data);
@@ -47,7 +47,7 @@ public class WeatherRepository {
     }
 
     public void getCurrentWeather(String location, WeatherCallback<CurrentWeather> callback, Context context) {
-        networkDataSource.fetchCurrentWeather(location, new NetworkDataSource.WeatherCallback<CurrentWeather>() {
+        networkDataSource.fetchCurrentWeather(context, location, new NetworkDataSource.WeatherCallback<CurrentWeather>() {
             @Override
             public void onSuccess(CurrentWeather data) {
                 callback.onSuccess(data);

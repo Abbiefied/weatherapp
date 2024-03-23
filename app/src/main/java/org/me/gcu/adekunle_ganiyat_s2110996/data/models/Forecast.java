@@ -192,24 +192,34 @@ public class Forecast {
     public static Forecast fromJson(String jsonString) {
         try {
             JSONObject jsonObject = new JSONObject(jsonString);
-            String title = jsonObject.getString("title");
-            String date = jsonObject.getString("date");
-            String time = jsonObject.getString("time");
-            float minTemperature = (float) jsonObject.getDouble("minTemperature");
-            float maxTemperature = (float) jsonObject.getDouble("maxTemperature");
-            String windDirection = jsonObject.getString("windDirection");
-            float windSpeed = (float) jsonObject.getDouble("windSpeed");
-            String visibility = jsonObject.getString("visibility");
-            String pressure = jsonObject.getString("pressure");
-            String humidity = jsonObject.getString("humidity");
-            String uvRisk = jsonObject.getString("uvRisk");
-            String pollution = jsonObject.getString("pollution");
-            String sunrise = jsonObject.getString("sunrise");
-            String sunset = jsonObject.getString("sunset");
+
+            // Add null checks for each field before accessing them
+            String title = jsonObject.optString("title", null);
+            String date = jsonObject.optString("date", null);
+            String time = jsonObject.optString("time", null);
+            float minTemperature = (float) jsonObject.optDouble("minTemperature", 0.0);
+            float maxTemperature = (float) jsonObject.optDouble("maxTemperature", 0.0);
+            String windDirection = jsonObject.optString("windDirection", null);
+            float windSpeed = (float) jsonObject.optDouble("windSpeed", 0.0);
+            String visibility = jsonObject.optString("visibility", null);
+            String pressure = jsonObject.optString("pressure", null);
+            String humidity = jsonObject.optString("humidity", null);
+            String uvRisk = jsonObject.optString("uvRisk", null);
+            String pollution = jsonObject.optString("pollution", null);
+            String sunrise = jsonObject.optString("sunrise", null);
+            String sunset = jsonObject.optString("sunset", null);
+
+            // Check if any required field is null
+//            if (title == null || date == null || time == null || windDirection == null || visibility == null || pressure == null || humidity == null || uvRisk == null || pollution == null || sunrise == null || sunset == null) {
+//                return null; // Return null if any required field is missing
+//            }
+
+            // Create and return Forecast object
             return new Forecast(title, date, time, minTemperature, maxTemperature, windDirection, windSpeed, visibility, pressure, humidity, uvRisk, pollution, sunrise, sunset);
         } catch (JSONException e) {
             e.printStackTrace();
             return null;
         }
     }
+
 }

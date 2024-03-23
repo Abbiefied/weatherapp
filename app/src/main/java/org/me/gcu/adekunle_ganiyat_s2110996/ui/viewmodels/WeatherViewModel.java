@@ -2,6 +2,8 @@ package org.me.gcu.adekunle_ganiyat_s2110996.ui.viewmodels;
 
 import android.app.Application;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -14,12 +16,15 @@ import org.me.gcu.adekunle_ganiyat_s2110996.data.models.Forecast;
 import org.me.gcu.adekunle_ganiyat_s2110996.data.repositories.WeatherRepository;
 import org.me.gcu.adekunle_ganiyat_s2110996.data.sources.LocalDataSource;
 import org.me.gcu.adekunle_ganiyat_s2110996.data.sources.NetworkDataSource;
+import org.me.gcu.adekunle_ganiyat_s2110996.util.AppExecutors;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class WeatherViewModel extends AndroidViewModel {
     private static final String TAG = WeatherRepository.class.getSimpleName();
 
+    private static final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final WeatherRepository weatherRepository;
     private MutableLiveData<List<Forecast>> weatherForecast;
     private MutableLiveData<CurrentWeather> currentWeather;
@@ -28,26 +33,31 @@ public class WeatherViewModel extends AndroidViewModel {
     public WeatherViewModel(@NonNull Application application) {
         super(application);
         weatherRepository = new WeatherRepository(new NetworkDataSource(), new LocalDataSource(application));
+        weatherForecast = new MutableLiveData<>();
+        currentWeather = new MutableLiveData<>();
         selectedForecast = new MutableLiveData<>();
     }
 
     public MutableLiveData<List<Forecast>> getWeatherForecast(String location) {
-        MutableLiveData<List<Forecast>> weatherForecastLiveData = new MutableLiveData<>();
-        weatherRepository.getWeatherForecast(location, new WeatherRepository.WeatherCallback<List<Forecast>>() {
-            @Override
-            public void onSuccess(List<Forecast> data) {
-                weatherForecastLiveData.setValue(data);
-            }
+        AppExecutors.getInstance().diskIO().execute(() -> {
+            weatherRepository.getWeatherForecast(location, new WeatherRepository.WeatherCallback<List<Forecast>>() {
+                @Override
+                public void onSuccess(List<Forecast> data) {
 
-            @Override
-            public void onFailure(String message) {
-                // Handle failure
-                Log.e(TAG, "Failed to fetch weather forecast: " + message);
-                // Optionally, you can set an empty list or null to weatherForecastLiveData
-                // weatherForecastLiveData.setValue(new ArrayList<>());
-            }
-        }, getApplication().getApplicationContext());
-        return weatherForecastLiveData;
+                    weatherForecast.postValue(data);
+                }
+
+                @Override
+                public void onFailure(String message) {
+                    // Handle failure
+                    new Handler(Looper.getMainLooper()).post(() -> {
+                        Log.e(TAG, "Failed to fetch weather forecast: " + message);
+                        weatherForecast.setValue(new ArrayList<>());
+                    });
+                }
+            }, getApplication().getApplicationContext());
+        });
+        return weatherForecast;
     }
 
     public MutableLiveData<CurrentWeather> getCurrentWeather(String location) {
@@ -55,15 +65,18 @@ public class WeatherViewModel extends AndroidViewModel {
         weatherRepository.getCurrentWeather(location, new WeatherRepository.WeatherCallback<CurrentWeather>() {
             @Override
             public void onSuccess(CurrentWeather data) {
-                currentWeatherLiveData.setValue(data);
+
+                new Handler(Looper.getMainLooper()).post(() ->  currentWeatherLiveData.setValue(data));
             }
 
             @Override
             public void onFailure(String message) {
-                // Handle failure
-                Log.e(TAG, "Failed to fetch current weather: " + message);
-                // Optionally, you can set a default CurrentWeather object or null to currentWeatherLiveData
-                // currentWeatherLiveData.setValue(null);
+                mainHandler.post(() -> {
+                    // Handle failure
+                    Log.e(TAG, "Failed to fetch current weather: " + message);
+                    // Optionally, you can set a default CurrentWeather object or null to currentWeatherLiveData
+                    // currentWeatherLiveData.setValue(null);
+                });
             }
         }, getApplication().getApplicationContext());
         return currentWeatherLiveData;

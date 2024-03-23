@@ -3,11 +3,14 @@ package org.me.gcu.adekunle_ganiyat_s2110996.data.sources;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import org.me.gcu.adekunle_ganiyat_s2110996.data.models.CurrentWeather;
 import org.me.gcu.adekunle_ganiyat_s2110996.data.models.Forecast;
 
+import org.me.gcu.adekunle_ganiyat_s2110996.util.AppExecutors;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -32,38 +35,58 @@ public class NetworkDataSource {
         return false;
     }
 
-    public void fetchWeatherForecast(String location, WeatherCallback<List<Forecast>> callback) {
-        try {
-            String url = NetworkUtils.buildForecastUrl(location);
-            String xmlData = NetworkUtils.fetchData(url);
-            // Parse XML data into a list of forecast objects
-            List<Forecast> forecasts = parseForecastData(xmlData);
-            if (forecasts != null) {
-                callback.onSuccess(forecasts);
-            } else {
-                callback.onFailure("Failed to parse forecast data");
-            }
-        } catch (IOException e) {
-            Log.e(TAG, "Error fetching weather forecast data: " + e.getMessage());
-            callback.onFailure("Error fetching weather forecast data");
+    public void fetchWeatherForecast(Context context, String location, WeatherCallback<List<Forecast>> callback) {
+        if (!isNetworkAvailable(context)) {
+            callback.onFailure("Network unavailable");
+            return;
         }
+        AppExecutors.getInstance().diskIO().execute(() -> {
+            try {
+                String url = NetworkUtils.buildForecastUrl(location);
+                String xmlData = NetworkUtils.fetchData(url);
+                // Parse XML data into a list of forecast objects
+                List<Forecast> forecasts = parseForecastData(xmlData);
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    if (forecasts != null) {
+                        callback.onSuccess(forecasts);
+                    } else {
+                        callback.onFailure("Failed to parse forecast data");
+                    }
+                });
+            } catch (IOException e) {
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    callback.onFailure("Error fetching weather forecast data");
+                });
+                Log.e(TAG, "Error fetching weather forecast data: " + e.getMessage());
+            }
+        });
     }
 
-    public void fetchCurrentWeather(String location, WeatherCallback<CurrentWeather> callback) {
-        try {
-            String url = NetworkUtils.buildObservationUrl(location);
-            String xmlData = NetworkUtils.fetchData(url);
-            // Parse XML data into current weather object
-            CurrentWeather currentWeather = parseCurrentWeatherData(xmlData);
-            if (currentWeather != null) {
-                callback.onSuccess(currentWeather);
-            } else {
-                callback.onFailure("Failed to parse current weather data");
-            }
-        } catch (IOException e) {
-            Log.e(TAG, "Error fetching current weather data: " + e.getMessage());
-            callback.onFailure("Error fetching current weather data");
+    public void fetchCurrentWeather(Context context, String location, WeatherCallback<CurrentWeather> callback) {
+        if (!isNetworkAvailable(context)) {
+            callback.onFailure("Network unavailable");
+            return;
         }
+        AppExecutors.getInstance().diskIO().execute(() -> {
+            try {
+                String url = NetworkUtils.buildObservationUrl(location);
+                String xmlData = NetworkUtils.fetchData(url);
+                // Parse XML data into current weather object
+                CurrentWeather currentWeather = parseCurrentWeatherData(xmlData);
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    if (currentWeather != null) {
+                        callback.onSuccess(currentWeather);
+                    } else {
+                        callback.onFailure("Failed to parse current weather data");
+                    }
+                });
+            } catch (IOException e) {
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    callback.onFailure("Error fetching current weather data");
+                });
+                Log.e(TAG, "Error fetching current weather data: " + e.getMessage());
+            }
+        });
     }
 
     private List<Forecast> parseForecastData(String xmlData) {
@@ -206,9 +229,7 @@ public class NetworkDataSource {
                                             currentWeather.setWindDirection(value);
                                             break;
                                         case "Wind Speed":
-                                            String windSpeedStr = value.split(" ")[0];
-                                            float windSpeed = Float.parseFloat(windSpeedStr);
-                                            currentWeather.setWindSpeed(windSpeed);
+                                            currentWeather.setWindSpeed(value);
                                             break;
                                         case "Humidity":
                                             currentWeather.setHumidity(value);

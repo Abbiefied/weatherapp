@@ -58,12 +58,25 @@ public class DetailedForecastFragment extends Fragment {
     }
 
     private void updateSelectedForecast(Forecast forecast) {
-        // Update views with selected forecast data
         if (forecast != null) {
-            timeTextView.setText(forecast.getTime());
-            dateTextView.setText(forecast.getDate());
-            titleTextView.setText(forecast.getHumidity());
-            temperatureTextView.setText(getString(R.string.temperature_range, forecast.getMinTemperature(), forecast.getMaxTemperature()));
+            String time = forecast.getTime();
+            String date = forecast.getDate();
+            String humidity = forecast.getHumidity();
+            Float minTemperature = forecast.getMinTemperature();
+            Float maxTemperature = forecast.getMaxTemperature();
+
+            if (time != null) {
+                timeTextView.setText(time);
+            }
+            if (date != null) {
+                dateTextView.setText(date);
+            }
+            if (humidity != null) {
+                titleTextView.setText(humidity);
+            }
+            if (minTemperature != null && maxTemperature != null) {
+                temperatureTextView.setText(getString(R.string.temperature_range, minTemperature, maxTemperature));
+            }
         }
     }
 }
