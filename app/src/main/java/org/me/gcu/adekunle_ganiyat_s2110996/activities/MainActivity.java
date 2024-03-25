@@ -9,9 +9,10 @@ import androidx.fragment.app.FragmentTransaction;
 
 import org.me.gcu.adekunle_ganiyat_s2110996.R;
 import org.me.gcu.adekunle_ganiyat_s2110996.ui.fragments.CurrentWeatherFragment;
+import org.me.gcu.adekunle_ganiyat_s2110996.ui.fragments.SearchFragment;
 import org.me.gcu.adekunle_ganiyat_s2110996.ui.fragments.WeatherForecastFragment;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SearchFragment.OnSearchResultListener {
 
     private static final String LOCATION_ID = "2648579";
 
@@ -23,20 +24,37 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Initialize fragments with the default location
+        initializeFragments(LOCATION_ID);
+
+        SearchFragment searchFragment = new SearchFragment();
+        searchFragment.setOnSearchResultListener(this);
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.search_container, searchFragment)
+                .commit();
+    }
+
+    private void initializeFragments(String locationId) {
         // Initialize fragments
         currentWeatherFragment = new CurrentWeatherFragment();
         weatherForecastFragment = new WeatherForecastFragment();
 
         // Set the location for the fragments
-        currentWeatherFragment.setLocation(LOCATION_ID);
-        weatherForecastFragment.setLocation(LOCATION_ID);
+        currentWeatherFragment.setLocation(locationId);
+        weatherForecastFragment.setLocation(locationId);
 
         // Add the fragments to the activity layout
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.add(R.id.currentWeatherContainer, currentWeatherFragment);
-        transaction.add(R.id.forecastContainer, weatherForecastFragment);
+        transaction.replace(R.id.currentWeatherContainer, currentWeatherFragment);
+        transaction.replace(R.id.forecastContainer, weatherForecastFragment);
         transaction.commit();
     }
+
+    @Override
+    public void onSearchResultReceived(String locationId) {
+        initializeFragments(locationId);
+    }
+
 
 //    @Override
 //    public boolean onCreateOptionsMenu(Menu menu) {

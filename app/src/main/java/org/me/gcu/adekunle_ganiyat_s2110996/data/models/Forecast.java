@@ -6,6 +6,7 @@ import org.json.JSONObject;
 public class Forecast {
     private String title;
     private String date;
+    private String dayOfWeek;
     private String time;
     private float minTemperature;
     private float maxTemperature;
@@ -24,9 +25,10 @@ public class Forecast {
     }
 
     // Constructor with all fields
-    public Forecast(String title, String date, String time, float minTemperature, float maxTemperature, String windDirection, float windSpeed, String visibility, String pressure, String humidity, String uvRisk, String pollution, String sunrise, String sunset) {
+    public Forecast(String title, String date, String dayOfWeek, String time, float minTemperature, float maxTemperature, String windDirection, float windSpeed, String visibility, String pressure, String humidity, String uvRisk, String pollution, String sunrise, String sunset) {
         this.title = title;
         this.date = date;
+        this.dayOfWeek = dayOfWeek;
         this.time = time;
         this.minTemperature = minTemperature;
         this.maxTemperature = maxTemperature;
@@ -65,6 +67,14 @@ public class Forecast {
 
     public void setDate(String date) {
         this.date = date;
+    }
+
+    public String getDayOfWeek() {
+        return dayOfWeek;
+    }
+
+    public String setDayOfWeek(String dayOfWeek) {
+        return dayOfWeek;
     }
 
     public String getTime() {
@@ -169,6 +179,7 @@ public class Forecast {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("title", title);
             jsonObject.put("date", date);
+            jsonObject.put("dayOfWeek", dayOfWeek);
             jsonObject.put("time", time);
             jsonObject.put("minTemperature", minTemperature);
             jsonObject.put("maxTemperature", maxTemperature);
@@ -196,6 +207,7 @@ public class Forecast {
             // Add null checks for each field before accessing them
             String title = jsonObject.optString("title", null);
             String date = jsonObject.optString("date", null);
+            String dayOfweek = jsonObject.optString("dayOfWeek", null);
             String time = jsonObject.optString("time", null);
             float minTemperature = (float) jsonObject.optDouble("minTemperature", 0.0);
             float maxTemperature = (float) jsonObject.optDouble("maxTemperature", 0.0);
@@ -215,7 +227,7 @@ public class Forecast {
 //            }
 
             // Create and return Forecast object
-            return new Forecast(title, date, time, minTemperature, maxTemperature, windDirection, windSpeed, visibility, pressure, humidity, uvRisk, pollution, sunrise, sunset);
+            return new Forecast(title, date, dayOfweek, time, minTemperature, maxTemperature, windDirection, windSpeed, visibility, pressure, humidity, uvRisk, pollution, sunrise, sunset);
         } catch (JSONException e) {
             e.printStackTrace();
             return null;

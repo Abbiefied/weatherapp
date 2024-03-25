@@ -60,23 +60,21 @@ public class WeatherForecastFragment extends Fragment {
 
         // Initialize ViewModel using requireActivity()
         weatherViewModel = new ViewModelProvider(requireActivity()).get(WeatherViewModel.class);
-    }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        resumedState = true;
-
-        // Observe weather forecast data only if location is not null
         if (location != null) {
-                weatherViewModel.getWeatherForecast(location).observe(getViewLifecycleOwner(), forecastList -> {
-                    // Update UI on the main thread
-                    requireActivity().runOnUiThread(() -> {
-                        updateForecastList(forecastList);
-                    });
-                });
+            fetchWeatherForecastData();
         }
     }
+
+        private void fetchWeatherForecastData() {
+            weatherViewModel.getWeatherForecast(location).observe(getViewLifecycleOwner(), forecastList -> {
+                // Update UI on the main thread
+                requireActivity().runOnUiThread(() -> {
+                    updateForecastList(forecastList);
+                });
+            });
+        }
+
 
     @Override
     public void onPause() {
