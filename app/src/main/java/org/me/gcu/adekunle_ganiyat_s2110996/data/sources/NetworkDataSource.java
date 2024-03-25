@@ -16,11 +16,15 @@ import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import org.me.gcu.adekunle_ganiyat_s2110996.util.NetworkUtils;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class NetworkDataSource {
 
@@ -35,14 +39,15 @@ public class NetworkDataSource {
         return false;
     }
 
-    public void fetchWeatherForecast(Context context, String location, WeatherCallback<List<Forecast>> callback) {
+    public void fetchWeatherForecast(Context context, String locationId, WeatherCallback<List<Forecast>> callback) {
+        Log.d(TAG, "Fetching weather forecast for locationId - network1: " + locationId);
         if (!isNetworkAvailable(context)) {
             callback.onFailure("Network unavailable");
             return;
         }
         AppExecutors.getInstance().diskIO().execute(() -> {
             try {
-                String url = NetworkUtils.buildForecastUrl(location);
+                String url = NetworkUtils.buildForecastUrl(locationId);
                 String xmlData = NetworkUtils.fetchData(url);
                 // Parse XML data into a list of forecast objects
                 List<Forecast> forecasts = parseForecastData(xmlData);
@@ -62,15 +67,24 @@ public class NetworkDataSource {
         });
     }
 
-    public void fetchCurrentWeather(Context context, String location, WeatherCallback<CurrentWeather> callback) {
+    public void fetchCurrentWeather(Context context, String locationId, WeatherCallback<CurrentWeather> callback) {
+        Log.d(TAG, "Fetching weather forecast for locationId - network2: " + locationId);
         if (!isNetworkAvailable(context)) {
             callback.onFailure("Network unavailable");
             return;
         }
         AppExecutors.getInstance().diskIO().execute(() -> {
             try {
-                String url = NetworkUtils.buildObservationUrl(location);
+                String url = NetworkUtils.buildObservationUrl(locationId);
+                Log.d(TAG, "Fetching current weather data from: " + url);
                 String xmlData = NetworkUtils.fetchData(url);
+                if (xmlData == null || xmlData.isEmpty()) {
+                    new Handler(Looper.getMainLooper()).post(() -> {
+                        callback.onFailure("Empty or null data received");
+                    });
+                    return;
+                }
+                Log.d(TAG, "Received XML data: " + xmlData); // Log the raw XML data
                 // Parse XML data into current weather object
                 CurrentWeather currentWeather = parseCurrentWeatherData(xmlData);
                 new Handler(Looper.getMainLooper()).post(() -> {
@@ -108,6 +122,7 @@ public class NetworkDataSource {
             String pollution = null;
             String sunrise = null;
             String sunset = null;
+            String pubDate = null; // New variable to store pubDate
 
             while (eventType != XmlPullParser.END_DOCUMENT) {
                 String tagName = parser.getName();
@@ -127,39 +142,61 @@ public class NetworkDataSource {
                             pollution = null;
                             sunrise = null;
                             sunset = null;
+                            pubDate = null; // Initialize pubDate
                         } else if ("title".equalsIgnoreCase(tagName)) {
                             title = parser.nextText();
                             // Extract minTemp and maxTemp from title
-                            String[] tempParts = title.split("Maximum Temperature: | Minimum Temperature: ");
-                            if (tempParts.length >= 3) {
-                                minTemp = tempParts[1].substring(0, tempParts[1].indexOf('°'));
-                                maxTemp = tempParts[2].substring(0, tempParts[2].indexOf('°'));
+                            if (title != null) {
+                                String[] tempParts = title.split("Maximum Temperature: | Minimum Temperature: ");
+                                if (tempParts.length >= 3) {
+                                    minTemp = tempParts[1].substring(0, tempParts[1].indexOf('°'));
+                                    maxTemp = tempParts[2].substring(0, tempParts[2].indexOf('°'));
+                                }
                             }
                         } else if ("description".equalsIgnoreCase(tagName)) {
                             String description = parser.nextText();
                             // Parse other forecast details from description
                             String[] details = description.split(", ");
                             for (String detail : details) {
-                                if (detail.startsWith("Wind Direction: ")) {
-                                    windDirection = detail.substring("Wind Direction: ".length());
-                                } else if (detail.startsWith("Wind Speed: ")) {
-                                    windSpeed = detail.substring("Wind Speed: ".length(), detail.indexOf("mph"));
-                                } else if (detail.startsWith("Visibility: ")) {
-                                    visibility = detail.substring("Visibility: ".length());
-                                } else if (detail.startsWith("Pressure: ")) {
-                                    pressure = detail.substring("Pressure: ".length(), detail.indexOf("mb"));
-                                } else if (detail.startsWith("Humidity: ")) {
-                                    humidity = detail.substring("Humidity: ".length(), detail.indexOf("%"));
-                                } else if (detail.startsWith("UV Risk: ")) {
-                                    uvRisk = detail.substring("UV Risk: ".length());
-                                } else if (detail.startsWith("Pollution: ")) {
-                                    pollution = detail.substring("Pollution: ".length());
-                                } else if (detail.startsWith("Sunrise: ")) {
-                                    sunrise = detail.substring("Sunrise: ".length());
-                                } else if (detail.startsWith("Sunset: ")) {
-                                    sunset = detail.substring("Sunset: ".length());
+                                String[] keyValue = detail.split(": ");
+                                if (keyValue.length == 2) {
+                                    String key = keyValue[0];
+                                    String value = keyValue[1];
+                                    switch (key) {
+                                        case "Wind Direction":
+                                            windDirection = value;
+                                            break;
+                                        case "Wind Speed":
+                                            windSpeed = value.substring(0, value.indexOf("mph"));
+                                            break;
+                                        case "Visibility":
+                                            visibility = value;
+                                            break;
+                                        case "Pressure":
+                                            pressure = value.substring(0, value.indexOf("mb"));
+                                            break;
+                                        case "Humidity":
+                                            humidity = value.substring(0, value.indexOf("%"));
+                                            break;
+                                        case "UV Risk":
+                                            uvRisk = value;
+                                            break;
+                                        case "Pollution":
+                                            pollution = value;
+                                            break;
+                                        case "Sunrise":
+                                            sunrise = value;
+                                            break;
+                                        case "Sunset":
+                                            sunset = value;
+                                            break;
+                                        default:
+                                            break;
+                                    }
                                 }
                             }
+                        } else if ("pubDate".equalsIgnoreCase(tagName)) {
+                            pubDate = parser.nextText(); // Extract pubDate
                         }
                         break;
                     case XmlPullParser.END_TAG:
@@ -167,17 +204,35 @@ public class NetworkDataSource {
                             // Create a new Forecast object with the parsed parameters
                             Forecast forecast = new Forecast();
                             forecast.setTitle(title);
-                            forecast.setMinTemperature(Float.parseFloat(minTemp));
-                            forecast.setMaxTemperature(Float.parseFloat(maxTemp));
-                            forecast.setWindDirection(windDirection);
-                            forecast.setWindSpeed(Float.parseFloat(windSpeed));
-                            forecast.setVisibility(visibility);
-                            forecast.setPressure(pressure);
-                            forecast.setHumidity(humidity);
-                            forecast.setUvRisk(uvRisk);
-                            forecast.setPollution(pollution);
-                            forecast.setSunrise(sunrise);
-                            forecast.setSunset(sunset);
+                            forecast.setMinTemperature(minTemp != null ? Float.parseFloat(minTemp) : -1); // Set to -1 if null
+                            forecast.setMaxTemperature(maxTemp != null ? Float.parseFloat(maxTemp) : -1); // Set to -1 if null
+                            forecast.setWindDirection(windDirection != null ? windDirection : "Not available"); // Set to "Not available" if null
+                            forecast.setWindSpeed(windSpeed != null ? Float.parseFloat(windSpeed) : -1); // Set to -1 if null
+                            forecast.setVisibility(visibility != null ? visibility : "Not available"); // Set to "Not available" if null
+                            forecast.setPressure(pressure != null ? pressure : "Not available"); // Set to "Not available" if null
+                            forecast.setHumidity(humidity != null ? humidity : "Not available"); // Set to "Not available" if null
+                            forecast.setUvRisk(uvRisk != null ? uvRisk : "Not available"); // Set to "Not available" if null
+                            forecast.setPollution(pollution != null ? pollution : "Not available"); // Set to "Not available" if null
+                            forecast.setSunrise(sunrise != null ? sunrise : "Not available"); // Set to "Not available" if null
+                            forecast.setSunset(sunset != null ? sunset : "Not available"); // Set to "Not available" if null
+                            // Extract day of the week, date, and time from pubDate
+                            if (pubDate != null) {
+                                SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+                                try {
+                                    Date date = sdf.parse(pubDate);
+                                    // Extracting day of the week, date, and time
+                                    SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE", Locale.ENGLISH);
+                                    SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.ENGLISH);
+                                    SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.ENGLISH);
+                                    if (date != null) {
+                                        forecast.setDayOfWeek(dayFormat.format(date));
+                                        forecast.setDate(dateFormat.format(date));
+                                        forecast.setTime(timeFormat.format(date));
+                                    }
+                                } catch (ParseException e) {
+                                    e.printStackTrace();
+                                }
+                            }
                             forecastList.add(forecast);
                         }
                         break;
@@ -191,6 +246,7 @@ public class NetworkDataSource {
         }
         return forecastList;
     }
+
 
 
 

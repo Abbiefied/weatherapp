@@ -2,6 +2,7 @@ package org.me.gcu.adekunle_ganiyat_s2110996.ui.viewmodels;
 
 import android.app.Application;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -26,6 +27,7 @@ public class WeatherViewModel extends AndroidViewModel {
 
     private static final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final WeatherRepository weatherRepository;
+
     private MutableLiveData<List<Forecast>> weatherForecast;
     private MutableLiveData<CurrentWeather> currentWeather;
     private final MutableLiveData<Forecast> selectedForecast;
@@ -38,19 +40,19 @@ public class WeatherViewModel extends AndroidViewModel {
         selectedForecast = new MutableLiveData<>();
     }
 
-    public MutableLiveData<List<Forecast>> getWeatherForecast(String location) {
+    public MutableLiveData<List<Forecast>> getWeatherForecast(String locationId) {
         AppExecutors.getInstance().diskIO().execute(() -> {
-            weatherRepository.getWeatherForecast(location, new WeatherRepository.WeatherCallback<List<Forecast>>() {
+            weatherRepository.getWeatherForecast(locationId, new WeatherRepository.WeatherCallback<List<Forecast>>() {
                 @Override
                 public void onSuccess(List<Forecast> data) {
 
-                    weatherForecast.postValue(data);
+                    mainHandler.post(() -> weatherForecast.postValue(data));
                 }
 
                 @Override
                 public void onFailure(String message) {
                     // Handle failure
-                    new Handler(Looper.getMainLooper()).post(() -> {
+                    mainHandler.post(() -> {
                         Log.e(TAG, "Failed to fetch weather forecast: " + message);
                         weatherForecast.setValue(new ArrayList<>());
                     });
@@ -60,13 +62,12 @@ public class WeatherViewModel extends AndroidViewModel {
         return weatherForecast;
     }
 
-    public MutableLiveData<CurrentWeather> getCurrentWeather(String location) {
-        MutableLiveData<CurrentWeather> currentWeatherLiveData = new MutableLiveData<>();
-        weatherRepository.getCurrentWeather(location, new WeatherRepository.WeatherCallback<CurrentWeather>() {
+    public MutableLiveData<CurrentWeather> getCurrentWeather(String locationId) {
+        weatherRepository.getCurrentWeather(locationId, new WeatherRepository.WeatherCallback<CurrentWeather>() {
             @Override
             public void onSuccess(CurrentWeather data) {
 
-                new Handler(Looper.getMainLooper()).post(() ->  currentWeatherLiveData.setValue(data));
+                mainHandler.post(() ->  currentWeather.setValue(data));
             }
 
             @Override
@@ -79,9 +80,24 @@ public class WeatherViewModel extends AndroidViewModel {
                 });
             }
         }, getApplication().getApplicationContext());
-        return currentWeatherLiveData;
+        return currentWeather;
     }
 
+//    public LiveData<List<String>> searchLocations(String query) {
+//        MutableLiveData<List<String>> searchResults = new MutableLiveData<>();
+//        weatherRepository.searchLocations(query, new WeatherRepository.WeatherCallback<List<String>>() {
+//            @Override
+//            public void onSuccess(List<String> data) {
+//                searchResults.setValue(data);
+//            }
+//
+//            @Override
+//            public void onFailure(String message) {
+//                // Handle failure
+//            }
+//        });
+//        return searchResults;
+//    }
 
     public LiveData<Forecast> getSelectedForecast() {
         return selectedForecast;
@@ -91,7 +107,7 @@ public class WeatherViewModel extends AndroidViewModel {
         selectedForecast.setValue(forecast);
     }
 
-    public void refreshData(String location) {
-        weatherRepository.refreshData(location, getApplication().getApplicationContext());
+    public void refreshData(String locationId) {
+        weatherRepository.refreshData(locationId, getApplication().getApplicationContext());
     }
 }
