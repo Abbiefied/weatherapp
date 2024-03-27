@@ -51,6 +51,7 @@ public class NetworkDataSource {
                 String xmlData = NetworkUtils.fetchData(url);
                 // Parse XML data into a list of forecast objects
                 List<Forecast> forecasts = parseForecastData(xmlData);
+                Log.d(TAG, "Received XML data: " + xmlData);
                 new Handler(Looper.getMainLooper()).post(() -> {
                     if (forecasts != null) {
                         callback.onSuccess(forecasts);

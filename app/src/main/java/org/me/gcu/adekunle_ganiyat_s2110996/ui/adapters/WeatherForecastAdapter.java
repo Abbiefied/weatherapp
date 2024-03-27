@@ -19,9 +19,16 @@ public class WeatherForecastAdapter extends RecyclerView.Adapter<WeatherForecast
     private Context mContext;
     private List<Forecast> mForecastList;
 
-    public WeatherForecastAdapter(Context context, List<Forecast> forecastList) {
+    public interface OnItemClickListener {
+        void onItemClick(Forecast forecast);
+    }
+
+    private OnItemClickListener onItemClickListener;
+
+    public WeatherForecastAdapter(Context context, List<Forecast> forecastList, OnItemClickListener onItemClickListener) {
         this.mContext = context;
         this.mForecastList = forecastList;
+        this.onItemClickListener = onItemClickListener;
     }
 
     public void updateForecastList(List<Forecast> newForecastList) {
@@ -63,6 +70,14 @@ public class WeatherForecastAdapter extends RecyclerView.Adapter<WeatherForecast
             dateTextView = itemView.findViewById(R.id.dateTextView);
             weatherTextView = itemView.findViewById(R.id.weatherTextView);
             temperatureTextView = itemView.findViewById(R.id.temperatureTextView);
+
+            itemView.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    Forecast forecast = mForecastList.get(position);
+                    onItemClickListener.onItemClick(forecast);
+                }
+            });
         }
 
         public void bind(Forecast forecast) {

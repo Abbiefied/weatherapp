@@ -6,4 +6,8 @@
     </style>
 
     <style name="Theme.Adekunle_Ganiyat_S2110996" parent="Base.Theme.Adekunle_Ganiyat_S2110996" />
+    <style name="roundedImageRounded">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
 </resources>

@@ -21,5 +21,6 @@
     <string name="onboarding_title">onboarding_title</string>
     <string name="weather_icon_description">weather_icon_description</string>
     <string name="search_hint">Hint</string>
+    <string name="uv">uv</string>
     <!-- Add other string resources here -->
 </resources>

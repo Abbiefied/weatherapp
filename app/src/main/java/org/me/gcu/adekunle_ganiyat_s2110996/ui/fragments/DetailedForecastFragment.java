@@ -21,10 +21,10 @@ import org.me.gcu.adekunle_ganiyat_s2110996.R;
 public class DetailedForecastFragment extends Fragment {
 
     private WeatherViewModel weatherViewModel;
-    private TextView timeTextView;
-    private TextView dateTextView;
-    private TextView titleTextView;
-    private TextView temperatureTextView;
+    private TextView detailedTimeTextView;
+    private TextView detailedDateTextView;
+    private TextView detailedTitleTextView;
+    private TextView detailedTempTextView;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -39,11 +39,13 @@ public class DetailedForecastFragment extends Fragment {
         View root = inflater.inflate(R.layout.fragment_detailed_forecast, container, false);
 
         // Initialize Views
-        timeTextView = root.findViewById(R.id.detailedTimeTextView);
-        dateTextView = root.findViewById(R.id.detailedDateTextView);
-        titleTextView = root.findViewById(R.id.detailedTitleTextView);
-        temperatureTextView = root.findViewById(R.id.detailedTemperatureTextView);
+        detailedTimeTextView = root.findViewById(R.id.detailedTimeTextView);
+        detailedDateTextView = root.findViewById(R.id.detailedDateTextView);
+        detailedTitleTextView = root.findViewById(R.id.detailedTitleTextView);
+        detailedTempTextView = root.findViewById(R.id.detailedTemperatureTextView);
 
+        Forecast forecast = getArguments().getParcelable("forecast");
+        updateSelectedForecast(forecast);
         return root;
     }
 
@@ -66,16 +68,16 @@ public class DetailedForecastFragment extends Fragment {
             Float maxTemperature = forecast.getMaxTemperature();
 
             if (time != null) {
-                timeTextView.setText(time);
+                detailedTimeTextView.setText(time);
             }
             if (date != null) {
-                dateTextView.setText(date);
+                detailedDateTextView.setText(date);
             }
             if (humidity != null) {
-                titleTextView.setText(humidity);
+                detailedTitleTextView.setText(humidity);
             }
             if (minTemperature != null && maxTemperature != null) {
-                temperatureTextView.setText(getString(R.string.temperature_range, minTemperature, maxTemperature));
+                detailedTempTextView.setText(getString(R.string.temperature_range, minTemperature, maxTemperature));
             }
         }
     }

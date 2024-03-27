@@ -1,5 +1,6 @@
 package org.me.gcu.adekunle_ganiyat_s2110996.ui.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -14,6 +15,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.me.gcu.adekunle_ganiyat_s2110996.activities.DetailedForecastActivity;
 import org.me.gcu.adekunle_ganiyat_s2110996.data.models.Forecast;
 import org.me.gcu.adekunle_ganiyat_s2110996.ui.adapters.WeatherForecastAdapter;
 import org.me.gcu.adekunle_ganiyat_s2110996.ui.viewmodels.WeatherViewModel;
@@ -43,7 +45,13 @@ public class WeatherForecastFragment extends Fragment {
         // Initialize RecyclerView
         recyclerView = root.findViewById(R.id.forecastRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-        forecastAdapter = new WeatherForecastAdapter(requireContext(), new ArrayList<>());
+        forecastAdapter = new WeatherForecastAdapter(requireContext(), new ArrayList<>(), forecast -> {
+            // Handle item click event
+            // You can navigate to the DetailedForecastActivity from here
+            Intent intent = new Intent(requireContext(), DetailedForecastActivity.class);
+            intent.putExtra("forecast", forecast);
+            startActivity(intent);
+        });
         recyclerView.setAdapter(forecastAdapter);
 
         // Set the location

@@ -83,21 +83,11 @@ public class WeatherViewModel extends AndroidViewModel {
         return currentWeather;
     }
 
-//    public LiveData<List<String>> searchLocations(String query) {
-//        MutableLiveData<List<String>> searchResults = new MutableLiveData<>();
-//        weatherRepository.searchLocations(query, new WeatherRepository.WeatherCallback<List<String>>() {
-//            @Override
-//            public void onSuccess(List<String> data) {
-//                searchResults.setValue(data);
-//            }
-//
-//            @Override
-//            public void onFailure(String message) {
-//                // Handle failure
-//            }
-//        });
-//        return searchResults;
-//    }
+    public void fetchWeatherData(String locationId, Context context) {
+        getWeatherForecast(locationId);
+        getCurrentWeather(locationId);
+    }
+
 
     public LiveData<Forecast> getSelectedForecast() {
         return selectedForecast;

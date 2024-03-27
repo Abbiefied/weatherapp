@@ -1,9 +1,12 @@
 package org.me.gcu.adekunle_ganiyat_s2110996.data.models;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Forecast {
+public class Forecast implements Parcelable {
     private String title;
     private String date;
     private String dayOfWeek;
@@ -48,8 +51,38 @@ public class Forecast {
         this.minTemperature = minTemperature;
         this.maxTemperature = maxTemperature;
         this.humidity = humidity;
-
     }
+
+    // Constructor for creating Forecast object from Parcel
+    protected Forecast(Parcel in) {
+        title = in.readString();
+        date = in.readString();
+        dayOfWeek = in.readString();
+        time = in.readString();
+        minTemperature = in.readFloat();
+        maxTemperature = in.readFloat();
+        windDirection = in.readString();
+        windSpeed = in.readFloat();
+        visibility = in.readString();
+        pressure = in.readString();
+        humidity = in.readString();
+        uvRisk = in.readString();
+        pollution = in.readString();
+        sunrise = in.readString();
+        sunset = in.readString();
+    }
+
+    public static final Creator<Forecast> CREATOR = new Creator<Forecast>() {
+        @Override
+        public Forecast createFromParcel(Parcel in) {
+            return new Forecast(in);
+        }
+
+        @Override
+        public Forecast[] newArray(int size) {
+            return new Forecast[size];
+        }
+    };
 
     // Getters and setters for all fields
 
@@ -221,11 +254,6 @@ public class Forecast {
             String sunrise = jsonObject.optString("sunrise", null);
             String sunset = jsonObject.optString("sunset", null);
 
-            // Check if any required field is null
-//            if (title == null || date == null || time == null || windDirection == null || visibility == null || pressure == null || humidity == null || uvRisk == null || pollution == null || sunrise == null || sunset == null) {
-//                return null; // Return null if any required field is missing
-//            }
-
             // Create and return Forecast object
             return new Forecast(title, date, dayOfweek, time, minTemperature, maxTemperature, windDirection, windSpeed, visibility, pressure, humidity, uvRisk, pollution, sunrise, sunset);
         } catch (JSONException e) {
@@ -234,4 +262,27 @@ public class Forecast {
         }
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(title);
+        dest.writeString(date);
+        dest.writeString(dayOfWeek);
+        dest.writeString(time);
+        dest.writeFloat(minTemperature);
+        dest.writeFloat(maxTemperature);
+        dest.writeString(windDirection);
+        dest.writeFloat(windSpeed);
+        dest.writeString(visibility);
+        dest.writeString(pressure);
+        dest.writeString(humidity);
+        dest.writeString(uvRisk);
+        dest.writeString(pollution);
+        dest.writeString(sunrise);
+        dest.writeString(sunset);
+    }
 }

@@ -1,28 +1,58 @@
 package org.me.gcu.adekunle_ganiyat_s2110996.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.me.gcu.adekunle_ganiyat_s2110996.R;
+import org.me.gcu.adekunle_ganiyat_s2110996.ui.adapters.WeatherForecastAdapter;
 import org.me.gcu.adekunle_ganiyat_s2110996.ui.fragments.CurrentWeatherFragment;
 import org.me.gcu.adekunle_ganiyat_s2110996.ui.fragments.SearchFragment;
 import org.me.gcu.adekunle_ganiyat_s2110996.ui.fragments.WeatherForecastFragment;
+import org.me.gcu.adekunle_ganiyat_s2110996.ui.viewmodels.WeatherViewModel;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements SearchFragment.OnSearchResultListener {
-
-    private static final String LOCATION_ID = "2648579";
+    private static final String LOCATION_ID = "934154";
 
     private CurrentWeatherFragment currentWeatherFragment;
     private WeatherForecastFragment weatherForecastFragment;
+    private WeatherViewModel weatherViewModel;
+    private RecyclerView recyclerView;
+    private WeatherForecastAdapter forecastAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        weatherViewModel = new ViewModelProvider(this).get(WeatherViewModel.class);
+
+        recyclerView = findViewById(R.id.forecastRecyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        forecastAdapter = new WeatherForecastAdapter(this, new ArrayList<>(), forecast -> {
+            // Start DetailedForecastActivity when a card is clicked
+            Intent intent = new Intent(MainActivity.this, DetailedForecastActivity.class);
+            intent.putExtra("forecast", forecast);
+            startActivity(intent);
+        });
+        recyclerView.setAdapter(forecastAdapter);
+
+        // Observe weatherForecast LiveData and update the adapter
+        weatherViewModel.getWeatherForecast(LOCATION_ID).observe(this, forecastList -> {
+            forecastAdapter.updateForecastList(forecastList);
+        });
 
         // Initialize fragments with the default location
         initializeFragments(LOCATION_ID);
@@ -32,6 +62,30 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.On
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.search_container, searchFragment)
                 .commit();
+
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                int itemId = item.getItemId();
+                if (itemId == R.id.navigation_home) {
+                    // Handle home click
+                    return true;
+                } else if (itemId == R.id.navigation_search) {
+                    // Open SearchActivity
+                    Intent searchIntent = new Intent(MainActivity.this, SearchActivity.class);
+                    startActivity(searchIntent);
+                    return true;
+                } else if (itemId == R.id.navigation_map) {
+                    // Handle map click
+                    return true;
+                } else if (itemId == R.id.navigation_settings) {
+                    // Handle settings click
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
     private void initializeFragments(String locationId) {

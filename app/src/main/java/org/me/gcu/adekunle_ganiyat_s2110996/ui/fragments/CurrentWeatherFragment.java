@@ -34,8 +34,8 @@ public class CurrentWeatherFragment extends Fragment {
     private String location;
     private WeatherViewModel weatherViewModel;
     private TextView titleTextView;
-    private TextView humidityTextView;
-    private TextView temperatureTextView;
+    private TextView currentHumidTextView;
+    private TextView currentTempTextView;
 
     public void setLocation(String location) {
         this.location = location;
@@ -47,8 +47,8 @@ public class CurrentWeatherFragment extends Fragment {
 
         // Initialize Views
         titleTextView = root.findViewById(R.id.titleTextView);
-        humidityTextView = root.findViewById(R.id.humidityTextView);
-        temperatureTextView = root.findViewById(R.id.temperatureTextView);
+        currentHumidTextView = root.findViewById(R.id.currentHumidTextView);
+        currentTempTextView = root.findViewById(R.id.currentTempTextView);
 
         // Set the location
         if (getArguments() != null) {
@@ -102,12 +102,12 @@ public class CurrentWeatherFragment extends Fragment {
 
             String humidity = currentWeather.getHumidity();
             if (humidity != null) {
-                humidityTextView.setText(humidity);
+                currentHumidTextView.setText(humidity);
             }
 
             float temperature = currentWeather.getTemperature();
             if (!Float.isNaN(temperature)) {
-                temperatureTextView.setText(getString(R.string.temperature, temperature));
+                currentTempTextView.setText(getString(R.string.temperature, temperature));
             }
         }
     }

@@ -6,4 +6,9 @@
     <color name="accentColor">#03DAC5</color>
     <color name="textColorPrimary">#000000</color>
     <color name="textColorSecondary">#757575</color>
+    <color name="main_background">#19191b</color>
+    <color name="black">#ff000000</color>
+    <color name="white">#ffffffff</color>
+    <color name="blend_color">#3A3F54</color>
+    <color name="light_purple">#6530B4</color>
 </resources>

@@ -9,7 +9,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.me.gcu.adekunle_ganiyat_s2110996.R;
-import org.me.gcu.adekunle_ganiyat_s2110996.data.models.Location;
 
 import java.util.List;
 
@@ -25,10 +24,6 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
         this.locationList = locationList;
         this.onLocationClickListener = onLocationClickListener;
     }
-//    public LocationAdapter(List<String> locationList, OnLocationSelectedListener onLocationSelectedListener) {
-//        this.locationList = locationList;
-//        this.onLocationSelectedListener = onLocationSelectedListener;
-//    }
 
     @NonNull
     @Override
